@@ -3,6 +3,7 @@ require 'hurley'
 require 'json'
 require 'fluxie/data_serie'
 require 'fluxie/line_protocol'
+require 'fluxie/point'
 require 'logger'
 
 module Fluxie
@@ -88,7 +89,7 @@ module Fluxie
     end
 
     def write(series, tags: {}, values: {})
-      query = "#{LineProtocol.escape_field(series)}#{LineProtocol.tag_clause(tags)} #{LineProtocol.values(values)}"
+      query = Point.new(series, tags: tags, values: values).to_s
 
       logger.debug 'write: ' << query
       response = @http.post("/write?db=#{@database.name}", query)
