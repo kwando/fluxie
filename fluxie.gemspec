@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["hannes.nevalainen@me.com"]
   spec.summary       = 'InfluxDB 0.9.x client'
   spec.description   = spec.summary
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/kwando/fluxie"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")

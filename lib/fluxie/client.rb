@@ -2,6 +2,7 @@ require 'uri'
 require 'hurley'
 require 'json'
 require 'fluxie/data_serie'
+require 'fluxie/line_protocol'
 require 'logger'
 
 module Fluxie
@@ -45,20 +46,23 @@ module Fluxie
 
 
   class Client
+    DEFAULT_PORT = 8086
+
     # @param [URI] url
     def initialize(url, logger: Logger.new(STDOUT))
       raise TypeError.new('expected an URI instance') unless url.kind_of?(URI)
       @url = url
-      db_name = url.path[1..-1]
+      db_name = url.path.to_s[1..-1]
 
       @logger = logger
-      @http = Hurley::Client.new(url)
-      @http.header[:user_agent] = "Fluxie v#{Fluxie::VERSION}"
-      @http.after_call(JSONDecoder)
-
 
       @url.scheme = 'http'
       @url.path = ''
+      @url.port = DEFAULT_PORT if @url.port.nil?
+
+      @http = Hurley::Client.new(url)
+      @http.header[:user_agent] = "Fluxie v#{Fluxie::VERSION}"
+      @http.after_call(JSONDecoder)
 
       @database = Database.new(self, db_name)
     end
@@ -69,6 +73,7 @@ module Fluxie
       query('show databases').series.first.values.flatten
     end
 
+    # @return [Fluxie::Result]
     def query(string)
       logger.debug 'query: ' << string
       response = @http.get('/query', db: @database.name, q: string)
@@ -83,10 +88,7 @@ module Fluxie
     end
 
     def write(series, tags: {}, values: {})
-      tags = tags.map { |k, v| "#{k}=#{v}" }.join(',')
-      tags = ',' << tags unless tags.empty?
-
-      query = "#{series}#{tags} #{values.map { |k, v| "#{k}=#{v}" }.join(',')}"
+      query = "#{LineProtocol.escape_field(series)}#{LineProtocol.tags(tags)} #{LineProtocol.values(values)}"
 
       logger.debug 'write: ' << query
       response = @http.post("/write?db=#{@database.name}", query)
@@ -102,6 +104,7 @@ module Fluxie
     end
 
     class << self
+      # @return [Fluxie::Client]
       def from_url(string)
         new(URI.parse(string.to_s))
       end

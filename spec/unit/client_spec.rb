@@ -26,6 +26,11 @@ describe Fluxie::Client do
         result = client.write('datapoints', values: {d: rand}, tags: {host: 'eve'})
         expect(result).to be(nil)
       end
+
+      it 'can write string values' do
+        result = client.write('datapoints', values: {d: rand, host: 'eve'}, tags: {host: 'eve'})
+        expect(result).to be(nil)
+      end
     end
   end
 
