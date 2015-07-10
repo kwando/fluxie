@@ -30,4 +30,30 @@ describe Fluxie::LineProtocol do
       expect(protocol.escape_field('tag,value,with"commas"')).to eq('tag\,value\,with"commas"')
     end
   end
+
+  describe 'values' do
+    it 'removes nil values' do
+      expect(protocol.values(hello: nil)).to eq('')
+    end
+
+    it 'escapes keyes and values properly' do
+      input = {hello: 'world', 'da ,ta' => 23, test: nil}
+      output = 'hello="world",da\ \,ta=23'
+
+      expect(protocol.values(input)).to eq(output)
+    end
+  end
+
+  describe 'tags' do
+    it 'removes nil values' do
+      expect(protocol.tags(hello: nil)).to eq('')
+    end
+
+    it 'escapes keyes and values properly' do
+      input = {hello: 'world', 'da ,ta' => 23, test: nil}
+      output = 'hello=world,da\ \,ta=23'
+
+      expect(protocol.tags(input)).to eq(output)
+    end
+  end
 end

@@ -51,6 +51,13 @@ describe Fluxie::Client do
     end
   end
 
+  describe 'ping' do
+    let(:client) { Fluxie::Client.from_url('influxdb://uuuu:pppp@127.0.0.1:8086/sms') }
+    it 'works' do
+      expect(client.ping).to eq(true)
+    end
+  end
+
 
   describe 'JSONDecoder' do
     let(:decoder) { Fluxie::JSONDecoder }

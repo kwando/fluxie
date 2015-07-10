@@ -6,21 +6,27 @@ module Fluxie
         then
           return value
         else
-          return %Q("#{value.to_s.gsub('"','\"')}")
+          return %Q("#{value.to_s.gsub('"', '\"')}")
       end
     end
 
     # @param tags [Hash]
     # @return [String]
     def self.values(values)
-      values.map { |k, v| "#{escape_field(k)}=#{escape(v)}" }.join(',')
+      values.each.reject { |_, v| v.nil? }.map { |k, v| "#{escape_field(k)}=#{escape(v)}" }.join(',')
     end
 
     # @param tags [Hash]
     # @return [String]
     def self.tags(tags)
+      tags = tags.reject { |_, v| v.nil? }
       return '' if tags.empty?
-      ',' << tags.map { |k, v| "#{escape_field(k)}=#{v}" }.join(',')
+      tags.map { |k, v| "#{escape_field(k)}=#{v}" }.join(',')
+    end
+
+    def self.tag_clause(tags)
+      result = tags(tags)
+      result.empty? ? result : ',' << result
     end
 
     # @param field [String | Symbol]

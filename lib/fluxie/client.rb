@@ -88,7 +88,7 @@ module Fluxie
     end
 
     def write(series, tags: {}, values: {})
-      query = "#{LineProtocol.escape_field(series)}#{LineProtocol.tags(tags)} #{LineProtocol.values(values)}"
+      query = "#{LineProtocol.escape_field(series)}#{LineProtocol.tag_clause(tags)} #{LineProtocol.values(values)}"
 
       logger.debug 'write: ' << query
       response = @http.post("/write?db=#{@database.name}", query)
@@ -101,6 +101,11 @@ module Fluxie
       raise "#{response.status_code} #{response.body}"
     rescue Hurley::ClientError => ex
       raise ClientError.new(ex, ex.message)
+    end
+
+    # @return [Boolean]
+    def ping
+      @http.get('/ping').success?
     end
 
     class << self
